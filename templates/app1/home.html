@@ -1,0 +1,64 @@
+<!-- chat_demo/templates/room.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>Chat Room</title>
+</head>
+
+<body>
+
+<ul id="chat-box" style="width: 300px;height: 500px;background: burlywood ;overflow-y:scroll ">
+</ul>
+<input id="chat-message-input" type="text" placeholder="请输入您要发送的消息" size="60"/><br/>
+<input id="chat-message-submit" type="button" value="发送消息"/>
+</body>
+<script>
+    var roomName = "{{ room_name|escapejs }}";
+
+    var chatSocket = new WebSocket(
+        'ws://' + window.location.host +
+        '/ws/room/' + roomName + '/');
+
+    chatSocket.onmessage = function send_msg(e) {
+        var data = JSON.parse(e.data);
+        var ul_box = document.getElementById('chat-box');
+        var li = document.createElement('li');
+        var span = document.createElement('span');
+        var p = document.createElement('p');
+        console.log(data);
+        var user_id = data['user_id'];
+        var message = data['message'];
+        if (message) {
+            span.innerText = (
+                '用户名:' + user_id + '\n' +
+                '消息内容:' + message
+            );
+            li.appendChild(span);
+            ul_box.appendChild(li);
+            ul_box.appendChild(p); // 就是为了空一行而已
+            ul_box.scrollTo(0, ul_box.scrollHeight) //滑动到最下方(让最新消息显示出来)
+        }
+    };
+
+
+    document.querySelector('#chat-message-input').focus();
+    document.querySelector('#chat-message-input').onkeyup = function (e) {
+        if (e.keyCode === 13) {  // enter, return
+            document.querySelector('#chat-message-submit').click();
+        }
+    };
+
+    document.querySelector('#chat-message-submit').onclick = function (e) {
+        var messageInputDom = document.querySelector('#chat-message-input');
+        var message = messageInputDom.value;
+        chatSocket.send(JSON.stringify({
+            'user_id': 12,
+            'message': message,
+        }));
+
+        messageInputDom.value = '';
+    };
+
+</script>
+</html>

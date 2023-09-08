@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<table border="5"> <!------------把border赋值为0，这个表格没有边框-->
+<tr>
+<th>QQID</th>
+<th>username</th>    <!-------------------利用 <th>将这个值设置为表头-->
+<th>gender</th>     <!----------------  ---利用 <th>将这个值设置为表头-->
+<th>年龄</th>
+    <td>发起通信</td>
+<td>消息数</td>
+</tr>
+<!-----------------------------------这是第一行-->
+    {% for obj in data%}
+    {% if obj.qqid in friends_list %}
+
+    <tr>
+        <td>{{obj.qqid}}</td>
+        <td>{{obj.username}}</td>
+        <td>{{obj.gender}}</td>
+        <td>{{obj.age}}</td>
+        <td><a href="http://127.0.0.1:8000/app1/{{obj.qqid}}/index2">发起 </a>--></td>
+        <td><a href="http://127.0.0.1:8000/app1/{{send_id}}/index2" >查看消息</a> </td>
+        <br/>
+    </tr>
+    {%endif%}
+    {% endfor%}
+ </table>
+<input type="text" id="qqid" placeholder="QQ号">
+<input type="submit" value="删除好友" onclick="deletef()">
+
+<a href="http://127.0.0.1:8000/app1/1/index2">公共聊天室</a>
+
+
+
+</body>
+</html>
+<script  type="text/javascript" src="http://libs.baidu.com/jquery/2.1.4/jquery.min.js">
+  </script>
+<script>
+function deletef(){
+    var qqid = document.getElementById('qqid').value
+    $.ajax({
+      url:"deletefriends",
+      type:'post',
+      dataType:"json",
+      data:{
+      'csrfmiddlewaretoken': "{{ csrf_token }}",
+        "qqid":qqid
+      },
+      success: function (result){
+        if(result.success){
+          alert(result.msg);
+        }
+        else {
+          alert(result.msg);
+        }
+      },
+      error:function (){
+        alert("搜索异步请求失败")
+      }
+
+    })
+  }
+</script>

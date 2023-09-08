@@ -1,0 +1,97 @@
+{% extends "app1/base.html" %}
+{% block title %}聊天室{% endblock %}
+{% block content %}
+<!--聊天框-->
+<!-- <div class="list-group col-md-10 col-md-offset-1 well">
+    <div class="list-group-item">
+        {% for chat in chats %}
+        <h4 class="list-group-item-heading">{{chat.sender_id}}用户:{{chat.content}}</h4>
+        <p class="list-group-item-text">{{chat.time}}</p>
+        <input type="hidden" class="chat_id" value="{{chat.id}}"/>
+        <br>
+        {% endfor %}
+    </div>
+</div> -->
+<div id="contentText" class="list-group col-md-10 col-md-offset-1 well"></div>
+
+<form  class="form-horizontal panel container" id="form1" method="POST" onsubmit="return false" action="##">
+    {% csrf_token %}
+    <div class="form-group col-md-10">
+        <textarea type="text" name="content" id="content" value="" class="form-control" placeholder=""></textarea>
+    </div>
+    <div class="form-group col-md-4">
+        <input type="hidden" name="post_type" value="send_chat" />
+    </div>
+            <input type="submit" class="btn btn-lg btn-primary" value="发送" onclick="login()"/>
+    <input type="submit" class="btn btn-lg btn-primary" value="刷新" onclick="refresh()"/>
+</form>
+
+{% endblock %}
+
+{% block script %}
+
+
+<script  type="text/javascript" src="http://libs.baidu.com/jquery/2.1.4/jquery.min.js">
+  </script>
+
+<script>//实现聊天框的实时更新
+
+    function createTable(){
+        $.ajax({
+            type:'POST',
+            url:"index2",
+            data:{
+                'csrfmiddlewaretoken': "{{ csrf_token }}",
+                'post_type':'get_chat'
+            },
+            dataType:"text",
+            success:function(result){
+                var str='{% for chat in chats %}'+
+                '<h4 class="list-group-item-heading">{{chat.sender_id}}用户:{{chat.content}}</h4>'+
+                '<p class="list-group-item-text">{{chat.time}}</p>'+
+                '<input type="hidden" class="chat_id" value="{{chat.id}}"/>'+
+                '<br>'+
+                '{% endfor %}'
+                // console.log(str);
+                $('#contentText').append(str)
+
+                // contentText.innerhtml(str);
+                console.log("刷新聊天框")
+                $('#contentText').html(str);//将str移到id为contenText的标签上
+            },
+            error:function(result){
+                alert(result);
+            }
+        })
+    }
+    setInterval('createTable()', 1000 );//执行刷新聊天框的功能
+ function login(){
+    var data=document.getElementById('content').value;
+        $.ajax({
+            url:"index2",
+            data:{
+                'content':data,
+                'csrfmiddlewaretoken': "{{ csrf_token }}",
+                'post_type':'send_chat'
+            },
+            type:'post',
+            success:function(result){
+                console.log(result);
+                if(result.state==200){
+                    alert(result.message);
+                }
+            },
+            error:function(){
+                alert("异常");
+            }
+        })
+    location.reload();
+    }
+ function refresh(){
+    location.reload();
+ }
+</script>
+
+{% endblock %}
+
+
