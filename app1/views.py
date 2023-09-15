@@ -5,14 +5,17 @@ from django.http import HttpResponse,JsonResponse
 from django.shortcuts import redirect
 from .models import Chat
 def index(request):
-    error1=''
+    result={}
     if request.method == "POST":
-        qqid_post =request.POST.get("qqid")
-        password_post = request.POST.get("password")
+        qqid_post =int(request.POST.get("qqid"))
+        password_post = str(request.POST.get("password"))
+        print(qqid_post,password_post)
         quersty = Userinfo.objects.all()
         for obj in quersty:
             qqid_db =obj.qqid
             password_db = obj.password
+            print(type(qqid_db))
+            print(qqid_db==qqid_post and password_post==password_db)
             if qqid_db==qqid_post and password_post==password_db:
                 request.session['user_id']=int(time.time())
                 request.session['qqid']=qqid_db
@@ -20,10 +23,18 @@ def index(request):
                 request.session.set_expiry(24*60*60)
                 # test = request.session.get("qqid")
                 # print(test)
-                return redirect('person'+'/'+qqid_post)
+                href ='person'+'/'+str(qqid_post)
+                result = {
+                    'success': True,
+                    'href':href
+                }
+                return JsonResponse(result)
             else:
-                error1="QQ号或密码错误"
-    return render(request, "app1/index.html",{"error1":error1})
+                result={
+                    'success':False,
+                'msg':"QQ号或密码错误"}
+        return JsonResponse(result)
+    return render(request, "app1/index.html")
 def sign_in(request):
     error_1=''
     error_2=''
@@ -48,8 +59,6 @@ def sign_in(request):
             error_1 = "用户名不能超过15"
 
     return render(request,"app1/sign_in.html",{'error1':error_1,'error2':error_2,'error3':error_3})
-def room(request,room_name):#房间号怎么确定？
-    return render(request,"app1/home.html")
 def person(request,qqid):
     data_list = Userinfo.objects.filter(qqid=qqid).all()
     for data in data_list:
@@ -178,6 +187,7 @@ def index2(request,room_id):
             return render(request, 'app1/chatroom.html', {'chats': chats})
         elif post_type == 'get_chat':
             chats = Chat.objects.filter(room_id=room_id)
+            print(list(chats))
             return render(request, 'app1/chatroom.html', {'chats': chats})
         else:return HttpResponse("成功post")
     else:

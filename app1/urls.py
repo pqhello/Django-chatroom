@@ -7,7 +7,6 @@ urlpatterns = [
     path('<str:room_id>/index2', views.index2,name='index1'),#聊天框
     path('index', views.index,name='index'),
     path('sign_in', views.sign_in,name='hello'),#==>这里匹配的路径是/polls/hello
-    path('room/<str:room_name>/', views.room, name='room'),
     path('person/<str:qqid>/',views.person,name='person'),
     path('person/<int:qqid>/user',views.user,name='user'),
     path('person/<int:qqid>/friends',views.friends,name='friends'),

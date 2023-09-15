@@ -2,17 +2,17 @@
 {% block title %}聊天室{% endblock %}
 {% block content %}
 <!--聊天框-->
-<!-- <div class="list-group col-md-10 col-md-offset-1 well">
-    <div class="list-group-item">
+ <div class="list-group col-md-10 col-md-offset-1 well">
+    <div class="list-group-item" id="context">
         {% for chat in chats %}
         <h4 class="list-group-item-heading">{{chat.sender_id}}用户:{{chat.content}}</h4>
         <p class="list-group-item-text">{{chat.time}}</p>
-        <input type="hidden" class="chat_id" value="{{chat.id}}"/>
         <br>
         {% endfor %}
+        <input type="hidden" class="chat_id" id='last_chatid' value="{{chatid}}"/>
     </div>
-</div> -->
-<div id="contentText" class="list-group col-md-10 col-md-offset-1 well"></div>
+</div>
+
 
 <form  class="form-horizontal panel container" id="form1" method="POST" onsubmit="return false" action="##">
     {% csrf_token %}
@@ -37,27 +37,36 @@
 <script>//实现聊天框的实时更新
 
     function createTable(){
+        var last_chatid=document.getElementById('last_chatid').value;
+
         $.ajax({
             type:'POST',
             url:"index2",
             data:{
                 'csrfmiddlewaretoken': "{{ csrf_token }}",
-                'post_type':'get_chat'
+                'post_type':'get_chat',
+                'last_id':last_chatid
             },
-            dataType:"text",
+            dataType:"json",
             success:function(result){
-                var str='{% for chat in chats %}'+
-                '<h4 class="list-group-item-heading">{{chat.sender_id}}用户:{{chat.content}}</h4>'+
-                '<p class="list-group-item-text">{{chat.time}}</p>'+
-                '<input type="hidden" class="chat_id" value="{{chat.id}}"/>'+
-                '<br>'+
-                '{% endfor %}'
-                // console.log(str);
-                $('#contentText').append(str)
-
-                // contentText.innerhtml(str);
+                for(var i=0;i<result.chats.length;i++){
+                    let div = document.getElementById('context') //获得容器目标
+                    h4=document.createElement("h4")
+                    h4.className='list-group-item-heading'
+                    h4.innerHTML=result.chats[i].fields.sender+"用户:"+result.chats[i].fields.content
+                    div.appendChild(h4)
+                    p = document.createElement("p")
+                    p.className='list-group-item-text'
+                    p.innerHTML=result.chats[i].fields.time
+                    div.appendChild(p)
+                    br=document.createElement("br")
+                    div.appendChild(br)
+                    document.getElementById('last_chatid').value=result.chats[i].pk
+                }
+                // document.getElementById('last_chatid').value=result.chats[-1].pk
+                console.log(result.chats)
                 console.log("刷新聊天框")
-                $('#contentText').html(str);//将str移到id为contenText的标签上
+                // $('#contentText').html(str);//将str移到id为contenText的标签上
             },
             error:function(result){
                 alert(result);
@@ -66,13 +75,15 @@
     }
     setInterval('createTable()', 1000 );//执行刷新聊天框的功能
  function login(){
+     var last_chatid=document.getElementById('last_chatid').value;
     var data=document.getElementById('content').value;
         $.ajax({
             url:"index2",
             data:{
                 'content':data,
                 'csrfmiddlewaretoken': "{{ csrf_token }}",
-                'post_type':'send_chat'
+                'post_type':'send_chat',
+                'last_id':last_chatid
             },
             type:'post',
             success:function(result){
@@ -85,7 +96,7 @@
                 alert("异常");
             }
         })
-    location.reload();
+    document.getElementById('content').value=''
     }
  function refresh(){
     location.reload();

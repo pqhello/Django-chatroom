@@ -76,17 +76,14 @@
 
         <div class="container">
         <div class="login-wrapper">
-            <div class="b">{{error1}}</div>
             <div class="header">Login</div>
 
-            <form method="post" target="index">
-                {% csrf_token %}
+
             <div class="form-wrapper">
-                <input type="text" name="qqid" placeholder="qqid" class="input-item">
-                <input type="password" name="password" placeholder="password" class="input-item">
-                    <input class="btn" type="submit" value="登录"/>
+                <input type="text" name="qqid" placeholder="qqid" class="input-item" id="qqid">
+                <input type="password" name="password" placeholder="password" class="input-item" id="password">
+                    <input class="btn" type="submit" value="登录" onclick="login()"/>
             </div>
-                            </form>
 
             <div class="msg">
                 Don't have account?
@@ -96,3 +93,33 @@
     </div>
 </body>
 </html>
+<script  type="text/javascript" src="http://libs.baidu.com/jquery/2.1.4/jquery.min.js">
+  </script>
+<script>
+function login(){
+    var qqid = document.getElementById('qqid').value
+    var password = document.getElementById('password').value
+    $.ajax({
+      url:"index",
+      type:'post',
+      dataType:"json",
+      data:{
+      'csrfmiddlewaretoken': "{{ csrf_token }}",
+        "qqid":qqid,
+        "password":password
+      },
+      success: function (result){
+        if(result.success){
+          window.location.href=result.href;
+        }
+        else {
+          alert(result.msg);
+        }
+      },
+      error:function (){
+        alert("搜索异步请求失败")
+      }
+
+    })
+  }
+</script>
